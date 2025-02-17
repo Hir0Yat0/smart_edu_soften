@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: false # Prevents ongoing deployments from being canceled
 
 env:
-  SERVER_ADDR: ${{ SERVER_ADDR }}
+  SERVER_ADDR: ${{ secrets.SERVER_ADDR }}
 
 jobs:
   deploy:
@@ -55,11 +55,11 @@ jobs:
           # Add the server to known_hosts (use `-p 2222` for custom port if needed)
           ssh-keyscan $SERVER_ADDR >> ~/.ssh/known_hosts
         env:
-          SSH_PRIVATE_KEY: ${{ SSH_PRIVATE_KEY }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Deploy with Kamal
         run: bin/kamal deploy
         env:
-          RAILS_MASTER_KEY: ${{ RAILS_MASTER_KEY }}
-          KAMAL_REGISTRY_USERNAME: ${{ DOCKER_REGISTRY_USERNAME }}
-          KAMAL_REGISTRY_PASSWORD: ${{ DOCKER_REGISTRY_PASSWORD }}
+          RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
+          KAMAL_REGISTRY_USERNAME: ${{ secrets.DOCKER_REGISTRY_USERNAME }}
+          KAMAL_REGISTRY_PASSWORD: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
