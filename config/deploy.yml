@@ -1,9 +1,9 @@
+<% require "dotenv"; Dotenv.load(".env") %>
 # Name of your application. Used to uniquely configure containers.
 service: smart_edu
 # Name of the container image.
 image: <%= ENV['KAMAL_REGISTRY_USERNAME'] %>/anonymous-location
 
-<% require "dotenv"; Dotenv.load(".env") %>
 
 # Deploy to these servers.
 servers:
