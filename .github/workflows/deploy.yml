@@ -108,9 +108,9 @@ jobs:
           push: true
           labels: |
             "service=anonymous-location"
-          # tags: |
-          #   "hschne/anonymous-location:latest"
-          #   "hschne/anonymous-location:${{ steps.tag.outputs.tag }}"
+          tags: |
+            "${{ secrets.DOCKER_REGISTRY_USERNAME }}/anonymous-location:latest"
+            "${{ secrets.DOCKER_REGISTRY_USERNAME }}/anonymous-location:${{ steps.tag.outputs.tag }}"
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
