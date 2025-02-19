@@ -3,6 +3,8 @@ service: smart_edu
 # Name of the container image.
 image: smartedu_b
 
+<% require "dotenv"; Dotenv.load(".env") %>
+
 # Deploy to these servers.
 servers:
   web:
