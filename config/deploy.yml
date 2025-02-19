@@ -7,6 +7,7 @@ image: smartedu_b
 # Deploy to these servers.
 servers:
   web:
+    hosts:
     - <%= ENV['SERVER_ADDR'] %>
   # job:
   #   hosts:
