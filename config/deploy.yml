@@ -1,7 +1,7 @@
 # Name of your application. Used to uniquely configure containers.
 service: smart_edu
 # Name of the container image.
-image: smartedu_b
+image: <%= ENV['KAMAL_REGISTRY_USERNAME'] %>/anonymous-location
 
 <% require "dotenv"; Dotenv.load(".env") %>
 
@@ -30,8 +30,7 @@ registry:
   username: <%= ENV['KAMAL_REGISTRY_USERNAME'] %>
 
   # Always use an access token rather than real password when possible.
-  password:
-    - KAMAL_REGISTRY_PASSWORD
+  password: KAMAL_REGISTRY_PASSWORD
 
 # Inject ENV variables into containers (secrets come from .kamal/secrets).
 env:
