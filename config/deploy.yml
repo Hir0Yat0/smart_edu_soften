@@ -30,7 +30,7 @@ registry:
   username: <%= ENV['KAMAL_REGISTRY_USERNAME'] %>
 
   # Always use an access token rather than real password when possible.
-  password: KAMAL_REGISTRY_PASSWORD
+  password: <%= ENV['KAMAL_REGISTRY_PASSWORD'] %>
 
 # Inject ENV variables into containers (secrets come from .kamal/secrets).
 env:
