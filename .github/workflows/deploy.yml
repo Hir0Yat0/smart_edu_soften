@@ -36,7 +36,7 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-ex          ruby-version: 3.3.6
+          ruby-version: 3.3.6
           bundler-cache: true
           cache-version: "tools-v1-${{ runner.os }}"
 
