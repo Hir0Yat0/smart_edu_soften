@@ -407,6 +407,7 @@ DEPENDENCIES
   capybara
   debug
   discard (~> 1.4)
+  dotenv
   faker (~> 3.5)
   importmap-rails
   jbuilder
