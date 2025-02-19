@@ -1,6 +1,5 @@
 # Name of your application. Used to uniquely configure containers.
 service: smart_edu
-
 # Name of the container image.
 image: smartedu_b
 
@@ -8,7 +7,7 @@ image: smartedu_b
 servers:
   web:
     hosts:
-    - <%= ENV['SERVER_ADDR'] %>
+    - <%= require "dotenv"; ENV['SERVER_ADDR'] %>
   # job:
   #   hosts:
   #     - 192.168.0.1
@@ -26,16 +25,16 @@ proxy:
 registry:
   # Specify the registry server, if you're not using Docker Hub
   # server: registry.digitalocean.com / ghcr.io / ...
-  username: <%= ENV['KAMAL_REGISTRY_USERNAME'] %>
+  username: KAMAL_REGISTRY_USERNAME
 
   # Always use an access token rather than real password when possible.
   password:
-    - <%= ENV['KAMAL_REGISTRY_PASSWORD'] %>
+    - KAMAL_REGISTRY_PASSWORD
 
 # Inject ENV variables into containers (secrets come from .kamal/secrets).
 env:
   secret:
-    - <%= ENV['RAILS_MASTER_KEY'] %>
+    - RAILS_MASTER_KEY
   clear:
     # Run the Solid Queue Supervisor inside the web server's Puma process to do jobs.
     # When you start using multiple servers, you should split out job processing to a dedicated machine.
