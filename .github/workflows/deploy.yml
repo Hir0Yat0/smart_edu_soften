@@ -36,7 +36,7 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.3.0
+ex          ruby-version: 3.3.6
           bundler-cache: true
           cache-version: "tools-v1-${{ runner.os }}"
 
@@ -54,6 +54,7 @@ jobs:
           eval $(ssh-agent -s) && ssh-add ~/.ssh/id_rsa
           # Add the server to known_hosts (use `-p 2222` for custom port if needed)
           ssh-keyscan $SERVER_ADDR >> ~/.ssh/known_hosts
+          touch /etc/aaa
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
