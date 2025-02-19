@@ -1,67 +1,130 @@
+# name: Deploy
+
+# on:
+#   workflow_dispatch:
+#   push:
+#     branches:
+#       - main
+
+# concurrency:
+#   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+#   cancel-in-progress: false # Prevents ongoing deployments from being canceled
+
+# env:
+#   SERVER_ADDR: ${{ secrets.SERVER_ADDR }}
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+
+#     permissions:
+#       contents: read
+#       packages: write
+#       attestations: write
+#       id-token: write
+
+#     env:
+#       DOCKER_BUILDKIT: 1
+#       RAILS_ENV: production
+#       BUNDLE_WITHOUT: “default development test production profiling”
+#       BUNDLE_WITH: tools
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+
+#       - name: Set up Ruby
+#         uses: ruby/setup-ruby@v1
+#         with:
+#           ruby-version: 3.3.6
+#           bundler-cache: true
+#           cache-version: "tools-v1-${{ runner.os }}"
+
+#       - name: Set up Docker Buildx for cache
+#         uses: docker/setup-buildx-action@v3
+
+#       - name: Expose GitHub Runtime for cache
+#         uses: crazy-max/ghaction-github-runtime@v3
+
+#       - name: Set up SSH connection
+#         run: |
+#           # Create SSH directory and write the private key
+#           mkdir -p ~/.ssh && echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
+#           # Enable current SSH key
+#           eval $(ssh-agent -s) && ssh-add ~/.ssh/id_rsa
+#           # Add the server to known_hosts (use `-p 2222` for custom port if needed)
+#           ssh-keyscan $SERVER_ADDR >> ~/.ssh/known_hosts
+#         env:
+#           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+#       - name: Deploy with Kamal
+#         run: bin/kamal deploy
+#         env:
+#           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
+#           KAMAL_REGISTRY_USERNAME: ${{ secrets.DOCKER_REGISTRY_USERNAME }}
+#           KAMAL_REGISTRY_PASSWORD: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
+#           SERVER_ADDR: ${{ secrets.SERVER_ADDR }}
+
 name: Deploy
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: false # Prevents ongoing deployments from being canceled
-
-env:
-  SERVER_ADDR: ${{ secrets.SERVER_ADDR }}
-
 jobs:
-  deploy:
+  Deploy:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-      packages: write
-      attestations: write
-      id-token: write
 
     env:
       DOCKER_BUILDKIT: 1
       RAILS_ENV: production
-      BUNDLE_WITHOUT: “default development test production profiling”
-      BUNDLE_WITH: tools
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_REGISTER_USERNAME }}
+          password: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
+
+      - name: Set Tag
+        id: tag
+        run: |
+          echo "tag=$(git rev-parse "$GITHUB_SHA")" >> $GITHUB_OUTPUT
+
+      - name: Build image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          builder: ${{ steps.buildx.outputs.name }}
+          push: true
+          labels: |
+            "service=anonymous-location"
+          # tags: |
+          #   "hschne/anonymous-location:latest"
+          #   "hschne/anonymous-location:${{ steps.tag.outputs.tag }}"
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.3.6
           bundler-cache: true
-          cache-version: "tools-v1-${{ runner.os }}"
 
-      - name: Set up Docker Buildx for cache
-        uses: docker/setup-buildx-action@v3
-
-      - name: Expose GitHub Runtime for cache
-        uses: crazy-max/ghaction-github-runtime@v3
-
-      - name: Set up SSH connection
-        run: |
-          # Create SSH directory and write the private key
-          mkdir -p ~/.ssh && echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
-          # Enable current SSH key
-          eval $(ssh-agent -s) && ssh-add ~/.ssh/id_rsa
-          # Add the server to known_hosts (use `-p 2222` for custom port if needed)
-          ssh-keyscan $SERVER_ADDR >> ~/.ssh/known_hosts
-          echo abc > /$HOME/aaaaa
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Deploy with Kamal
-        run: bin/kamal deploy
+      - name: Deploy command
+        run: bundle exec kamal deploy --skip-push
         env:
           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
-          KAMAL_REGISTRY_USERNAME: ${{ secrets.DOCKER_REGISTRY_USERNAME }}
-          KAMAL_REGISTRY_PASSWORD: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
-          SERVER_ADDR: ${{ secrets.SERVER_ADDR }}
+          KAMAL_REGISTRY_PASSWORD: ${{ secrets.DOCKER_REGISTRY_PASSWORD }} 
