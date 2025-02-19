@@ -124,8 +124,8 @@ jobs:
           bundler-cache: true
 
       - name: Deploy command
-        # run: bundle exec kamal deploy --skip-push --verbose
-        run: bin/kamal deploy
+        run: bundle exec kamal deploy --skip-push --verbose
+        # run: bin/kamal deploy
         env:
           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }} 
           KAMAL_REGISTRY_USERNAME: ${{ secrets.DOCKER_REGISTRY_USERNAME }}
