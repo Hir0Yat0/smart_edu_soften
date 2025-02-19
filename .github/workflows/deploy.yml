@@ -123,8 +123,29 @@ jobs:
         with:
           bundler-cache: true
 
+      # - name: Set up SSH connection
+      - name: Set up env
+        run: |
+          # # Create SSH directory and write the private key
+          # mkdir -p ~/.ssh && echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
+          # # Enable current SSH key
+          # eval $(ssh-agent -s) && ssh-add ~/.ssh/id_rsa
+          # # Add the server to known_hosts (use `-p 2222` for custom port if needed)
+          # ssh-keyscan $SERVER_ADDR >> ~/.ssh/known_hosts
+          # write enviroments variables to .env
+          echo "RAILS_MASTER_KEY=$RAILS_MASTER_KEY" >> .env
+          echo "KAMAL_REGISTRY_USERNAME=$KAMAL_REGISTRY_USERNAME" >> .env
+          echo "KAMAL_REGISTRY_PASSWORD=$KAMAL_REGISTRY_PASSWORD" >> .env
+          echo "SERVER_ADDR=$SERVER_ADDR" >> .env
+        env:
+          # SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }} 
+          KAMAL_REGISTRY_USERNAME: ${{ secrets.DOCKER_REGISTRY_USERNAME }}
+          KAMAL_REGISTRY_PASSWORD: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
+          SERVER_ADDR: ${{ secrets.SERVER_ADDR }} 
+
       - name: Deploy command
-        run: bundle exec kamal deploy --skip-push --verbose
+        run: bundle exec dotenv kamal deploy --skip-push --verbose
         # run: bin/kamal deploy
         env:
           RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }} 
