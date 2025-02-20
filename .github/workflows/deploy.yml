@@ -124,7 +124,7 @@ jobs:
           bundler-cache: true
 
       # - name: Set up SSH connection
-      - name: Set up env
+      - name: Set up env 
         run: |
           # # Create SSH directory and write the private key
           # mkdir -p ~/.ssh && echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
